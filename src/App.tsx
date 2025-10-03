@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { MouseEvent } from "react";
+import { NavLink, Route, Routes } from "react-router-dom";
 import "./App.css";
 import { FormulaireTache } from "./components/FormulaireTache";
 import { ResumeTaches } from "./components/ResumeTaches";
@@ -8,6 +9,7 @@ import { ListeTaches } from "./components/ListeTaches";
 import { ModalConfirmation } from "./components/ModalConfirmation";
 import { RechercheTaches } from "./components/RechercheTaches";
 import type { FiltreTache, Tache } from "./types/tache";
+import { StatsPage } from "./pages/Stats";
 
 function App() {
   const [titre, setTitre] = useState("");
@@ -219,8 +221,8 @@ function App() {
     return () => window.clearTimeout(timer);
   }, [nombreTerminees]);
 
-  return (
-    <div>
+  const pageAccueil = (
+    <div className="page-accueil">
       <h1>Bonjour 👋</h1>
       <h2>Voici un formulaire de to-do list</h2>
       <ResumeTaches
@@ -282,6 +284,47 @@ function App() {
           onAnnuler={annulerSuppressionTache}
         />
       )}
+    </div>
+  );
+
+  return (
+    <div className="app-page">
+      <header className="app-entete">
+        <nav className="app-nav">
+          <NavLink
+            to="/"
+            end
+            className={({ isActive }) =>
+              `nav-lien ${isActive ? "nav-lien-actif" : ""}`
+            }
+          >
+            Accueil
+          </NavLink>
+          <NavLink
+            to="/stats"
+            className={({ isActive }) =>
+              `nav-lien ${isActive ? "nav-lien-actif" : ""}`
+            }
+          >
+            Statistiques
+          </NavLink>
+        </nav>
+      </header>
+      <main className="app-contenu">
+        <Routes>
+          <Route path="/" element={pageAccueil} />
+          <Route
+            path="/stats"
+            element={
+              <StatsPage
+                total={liste.length}
+                terminees={nombreTerminees}
+                aFaire={nombreAFaire}
+              />
+            }
+          />
+        </Routes>
+      </main>
     </div>
   );
 }
