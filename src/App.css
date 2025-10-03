@@ -228,6 +228,7 @@ ul {
   border-radius: inherit;
   border: 1px solid transparent;
   transition: border-color 0.3s ease;
+  pointer-events: none;
 }
 
 .tache-item:hover::before {
