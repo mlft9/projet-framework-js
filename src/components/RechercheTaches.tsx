@@ -17,8 +17,8 @@ export function RechercheTaches({ valeur, onRechercheChange }: RechercheTachesPr
         type="search"
         value={valeur}
         onChange={handleChange}
-        placeholder="Rechercher une tâche..."
-        aria-label="Rechercher une tâche"
+        placeholder="Rechercher"
+        aria-label="Rechercher"
       />
     </div>
   );
