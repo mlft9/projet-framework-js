@@ -154,8 +154,66 @@ function App() {
     annulerEdition();
   }
 
+  const convertirDateLocale = (valeur: string): Date | null => {
+    if (!valeur) {
+      return null;
+    }
+    const [annee, mois, jour] = valeur.split("-");
+    if (!annee || !mois || !jour) {
+      return null;
+    }
+    const date = new Date(Number(annee), Number(mois) - 1, Number(jour));
+    if (Number.isNaN(date.getTime())) {
+      return null;
+    }
+    date.setHours(0, 0, 0, 0);
+    return date;
+  };
+
   const nombreTerminees = liste.filter((tache) => tache.terminee).length;
   const nombreAFaire = liste.length - nombreTerminees;
+
+  const {
+    tachesEnRetard,
+    tachesEcheanceProche,
+    nombreEnRetard,
+    nombreEcheanceProche,
+  } = useMemo(() => {
+    const maintenant = new Date();
+    maintenant.setHours(0, 0, 0, 0);
+    const limiteProche = new Date(maintenant);
+    limiteProche.setDate(limiteProche.getDate() + 3);
+
+    const idsRetard: string[] = [];
+    const idsProches: string[] = [];
+
+    liste.forEach((tache) => {
+      if (tache.terminee) {
+        return;
+      }
+      const dateEcheanceNormalisee = convertirDateLocale(tache.dateEcheance);
+      if (!dateEcheanceNormalisee) {
+        return;
+      }
+      if (dateEcheanceNormalisee < maintenant) {
+        idsRetard.push(tache.id);
+        return;
+      }
+      if (
+        dateEcheanceNormalisee >= maintenant &&
+        dateEcheanceNormalisee <= limiteProche
+      ) {
+        idsProches.push(tache.id);
+      }
+    });
+
+    return {
+      tachesEnRetard: idsRetard,
+      tachesEcheanceProche: idsProches,
+      nombreEnRetard: idsRetard.length,
+      nombreEcheanceProche: idsProches.length,
+    };
+  }, [liste]);
 
   const listeFiltree = useMemo(() => {
     const listeSelonFiltre = (() => {
@@ -273,6 +331,8 @@ function App() {
               onEnregistrerEdition={enregistrerEdition}
               onSupprimerTache={supprimerTache}
               onFinSuppression={gererFinSuppression}
+              tachesEnRetard={tachesEnRetard}
+              tachesEcheanceProche={tachesEcheanceProche}
             />
           )}
         </div>
@@ -320,6 +380,8 @@ function App() {
                 total={liste.length}
                 terminees={nombreTerminees}
                 aFaire={nombreAFaire}
+                enRetard={nombreEnRetard}
+                echeanceProche={nombreEcheanceProche}
               />
             }
           />
