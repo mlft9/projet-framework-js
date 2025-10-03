@@ -40,6 +40,7 @@ function App() {
     }
   });
   const [enSuppression, setEnSuppression] = useState<Array<string>>([]);
+  const [tacheASupprimer, setTacheASupprimer] = useState<Tache | null>(null);
   const [idEnEdition, setIdEnEdition] = useState<string | null>(null);
   const [titreEdition, setTitreEdition] = useState("");
   const [descriptionEdition, setDescriptionEdition] = useState("");
@@ -77,9 +78,26 @@ function App() {
   }
 
   function supprimerTache(id: string) {
+    const tache = liste.find((element) => element.id === id);
+    if (!tache) {
+      return;
+    }
+    setTacheASupprimer(tache);
+  }
+
+  function confirmerSuppressionTache() {
+    if (!tacheASupprimer) {
+      return;
+    }
+    const id = tacheASupprimer.id;
     setEnSuppression((ids) =>
       ids.includes(id) ? ids : [...ids, id]
     );
+    setTacheASupprimer(null);
+  }
+
+  function annulerSuppressionTache() {
+    setTacheASupprimer(null);
   }
 
   function gererFinSuppression(id: string) {
@@ -284,7 +302,44 @@ function App() {
           </ul>
         </div>
       </div>
+    {tacheASupprimer && (
+      <div
+        className="modal-overlay"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirmation-suppression-titre"
+        onClick={annulerSuppressionTache}
+      >
+        <div
+          className="modal-content"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <h3 id="confirmation-suppression-titre">Confirmer la suppression</h3>
+          <p>
+            Voulez-vous vraiment supprimer la tache{" "}
+            <strong>{tacheASupprimer.titre || "sans titre"}</strong> ?
+          </p>
+          <div className="modal-actions">
+            <button
+              type="button"
+              className="bouton-suppression"
+              onClick={confirmerSuppressionTache}
+            >
+              Supprimer
+            </button>
+            <button
+              type="button"
+              className="bouton-secondaire"
+              onClick={annulerSuppressionTache}
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     </div>
+
   );
 }
 export default App;
