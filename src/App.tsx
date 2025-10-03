@@ -1,35 +1,81 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState, useEffect } from "react";
+import "./App.css"
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [titre, setTitre] = useState("");
+  const [description, setDescription] = useState("");
+  const [dateEcheance, setDateEcheance] = useState("");
+
+  const [liste, setListe] = useState<
+    Array<{ titre: string; description: string; dateEcheance: string }>
+  >([]);
+
+  function addTache(event: React.MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    const nouvelleTache = { titre, description, dateEcheance };
+    setListe([...liste, nouvelleTache]);
+    console.log(JSON.stringify(nouvelleTache));
+    setTitre("");
+    setDescription("");
+    setDateEcheance("");
+  }
 
   return (
-    <>
+    <div>
+      <h1>Bonjour 👋</h1>
+      <h2>Voici un formulaire de to-do list</h2>
+      <div
+        style={{
+          backgroundColor: "#343434ff",
+          padding: "20px",
+          borderRadius: "8px",
+          width: "250px",
+        }}
+      >
+        <form
+          action="#"
+          style={{ display: "flex", flexDirection: "column", width: "200px" }}
+        >
+          <p>Titre de la tache</p>
+          <input
+            type="text"
+            placeholder="Titre"
+            value={titre}
+            onChange={(e) => setTitre(e.target.value)}
+            required
+          />{" "}
+          <br />
+          <p>Description de la tache</p>
+          <input
+            type="text"
+            placeholder="Description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />{" "}
+          <br />
+          <p>Date d'échéance</p>
+          <input
+            type="date"
+            value={dateEcheance}
+            onChange={(e) => setDateEcheance(e.target.value)}
+          />{" "}
+          <br />
+          <button onClick={addTache}>Ajouter</button>
+        </form>
+      </div>
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <h2>Liste des tâches</h2>
+        <div>
+          {liste.map((tache, index) => (
+            <div key={index} style={{ marginBottom: "10px" }}>
+              <h3>{tache.titre}</h3>
+              <p>{tache.description}</p>
+              <p>Date d'échéance: {tache.dateEcheance}</p>
+            </div>
+          ))}
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
-
-export default App
+export default App;
