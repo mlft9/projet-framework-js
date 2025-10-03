@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "./App.css";
 
 type Tache = {
@@ -50,6 +50,9 @@ function App() {
   );
   const [animeCompteurAFaire, setAnimeCompteurAFaire] = useState(false);
   const [animeCompteurTerminees, setAnimeCompteurTerminees] = useState(false);
+  const [filtreActif, setFiltreActif] = useState<"toutes" | "aFaire" | "terminees">(
+    "toutes"
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -155,6 +158,28 @@ function App() {
   const nombreTerminees = liste.filter((tache) => tache.terminee).length;
   const nombreAFaire = liste.length - nombreTerminees;
 
+  const listeFiltree = useMemo(() => {
+    switch (filtreActif) {
+      case "aFaire":
+        return liste.filter((tache) => !tache.terminee);
+      case "terminees":
+        return liste.filter((tache) => tache.terminee);
+      default:
+        return liste;
+    }
+  }, [liste, filtreActif]);
+
+  const messageAucunResultat = useMemo(() => {
+    switch (filtreActif) {
+      case "aFaire":
+        return "Aucune tâche à faire pour le moment.";
+      case "terminees":
+        return "Aucune tâche terminée pour le moment.";
+      default:
+        return "Aucune tâche n'a encore été ajoutée.";
+    }
+  }, [filtreActif]);
+
   useEffect(() => {
     if (!derniereTacheAjoutee) {
       return;
@@ -237,8 +262,37 @@ function App() {
         </div>
         <div className="taches-list bloc-animable">
           <h2>Liste des tâches</h2>
-          <ul>
-            {liste.map((tache) => (
+          <div className="filtres-taches" role="group" aria-label="Filtres des tâches">
+            <button
+              type="button"
+              className={`filtre-bouton ${filtreActif === "toutes" ? "actif" : ""}`}
+              onClick={() => setFiltreActif("toutes")}
+              aria-pressed={filtreActif === "toutes"}
+            >
+              Toutes
+            </button>
+            <button
+              type="button"
+              className={`filtre-bouton ${filtreActif === "aFaire" ? "actif" : ""}`}
+              onClick={() => setFiltreActif("aFaire")}
+              aria-pressed={filtreActif === "aFaire"}
+            >
+              À faire
+            </button>
+            <button
+              type="button"
+              className={`filtre-bouton ${filtreActif === "terminees" ? "actif" : ""}`}
+              onClick={() => setFiltreActif("terminees")}
+              aria-pressed={filtreActif === "terminees"}
+            >
+              Terminées
+            </button>
+          </div>
+          {listeFiltree.length === 0 ? (
+            <p className="liste-vide">{messageAucunResultat}</p>
+          ) : (
+            <ul>
+              {listeFiltree.map((tache) => (
               <li
                 className={`tache-item ${
                   tache.terminee ? "tache-terminee" : ""
@@ -348,8 +402,9 @@ function App() {
                   </>
                 )}
               </li>
-            ))}
-          </ul>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     {tacheASupprimer && (
