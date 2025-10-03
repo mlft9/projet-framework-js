@@ -45,6 +45,11 @@ function App() {
   const [titreEdition, setTitreEdition] = useState("");
   const [descriptionEdition, setDescriptionEdition] = useState("");
   const [dateEcheanceEdition, setDateEcheanceEdition] = useState("");
+  const [derniereTacheAjoutee, setDerniereTacheAjoutee] = useState<string | null>(
+    null
+  );
+  const [animeCompteurAFaire, setAnimeCompteurAFaire] = useState(false);
+  const [animeCompteurTerminees, setAnimeCompteurTerminees] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -67,6 +72,7 @@ function App() {
     setTitre("");
     setDescription("");
     setDateEcheance("");
+    setDerniereTacheAjoutee(nouvelleTache.id);
   }
 
   function basculerEtatTache(id: string) {
@@ -100,7 +106,10 @@ function App() {
     setTacheASupprimer(null);
   }
 
-  function gererFinSuppression(id: string) {
+  function gererFinSuppression(id: string, animationName?: string) {
+    if (animationName && animationName !== "disparitionTache") {
+      return;
+    }
     setEnSuppression((ids) => {
       if (!ids.includes(id)) {
         return ids;
@@ -146,22 +155,59 @@ function App() {
   const nombreTerminees = liste.filter((tache) => tache.terminee).length;
   const nombreAFaire = liste.length - nombreTerminees;
 
+  useEffect(() => {
+    if (!derniereTacheAjoutee) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setDerniereTacheAjoutee(null);
+    }, 700);
+    return () => window.clearTimeout(timer);
+  }, [derniereTacheAjoutee]);
+
+  useEffect(() => {
+    setAnimeCompteurAFaire(true);
+    const timer = window.setTimeout(() => setAnimeCompteurAFaire(false), 600);
+    return () => window.clearTimeout(timer);
+  }, [nombreAFaire]);
+
+  useEffect(() => {
+    setAnimeCompteurTerminees(true);
+    const timer = window.setTimeout(
+      () => setAnimeCompteurTerminees(false),
+      600
+    );
+    return () => window.clearTimeout(timer);
+  }, [nombreTerminees]);
+
   return (
     <div>
       <h1>Bonjour 👋</h1>
       <h2>Voici un formulaire de to-do list</h2>
       <div className="resume-taches">
-        <div className="carte-resume">
+        <div className="carte-resume carte-animable">
           <span className="resume-titre">À faire</span>
-          <span className="resume-valeur">{nombreAFaire}</span>
+          <span
+            className={`resume-valeur ${
+              animeCompteurAFaire ? "compteur-anime" : ""
+            }`}
+          >
+            {nombreAFaire}
+          </span>
         </div>
-        <div className="carte-resume">
+        <div className="carte-resume carte-animable">
           <span className="resume-titre">Terminées</span>
-          <span className="resume-valeur">{nombreTerminees}</span>
+          <span
+            className={`resume-valeur ${
+              animeCompteurTerminees ? "compteur-anime" : ""
+            }`}
+          >
+            {nombreTerminees}
+          </span>
         </div>
       </div>
       <div className="main-layout">
-        <div className="form-col">
+        <div className="form-col bloc-animable">
           <form action="#">
             <p>Titre de la tache</p>
             <input
@@ -189,16 +235,20 @@ function App() {
             )}
           </form>
         </div>
-        <div className="taches-list">
+        <div className="taches-list bloc-animable">
           <h2>Liste des tâches</h2>
           <ul>
             {liste.map((tache) => (
               <li
                 className={`tache-item ${
                   tache.terminee ? "tache-terminee" : ""
-                } ${enSuppression.includes(tache.id) ? "tache-suppression" : ""}`}
+                } ${
+                  enSuppression.includes(tache.id) ? "tache-suppression" : ""
+                } ${derniereTacheAjoutee === tache.id ? "tache-ajout" : ""}`}
                 key={tache.id}
-                onAnimationEnd={() => gererFinSuppression(tache.id)}
+                onAnimationEnd={(event) =>
+                  gererFinSuppression(tache.id, event.animationName)
+                }
               >
                 {idEnEdition === tache.id ? (
                   <div className="edition-tache">
