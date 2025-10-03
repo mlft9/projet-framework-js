@@ -1,23 +1,36 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./App.css";
+
+type Tache = {
+  titre: string;
+  description: string;
+  dateEcheance: string;
+  terminee: boolean;
+};
 
 function App() {
   const [titre, setTitre] = useState("");
   const [description, setDescription] = useState("");
   const [dateEcheance, setDateEcheance] = useState("");
 
-  const [liste, setListe] = useState<
-    Array<{ titre: string; description: string; dateEcheance: string }>
-  >([]);
+  const [liste, setListe] = useState<Array<Tache>>([]);
 
   function addTache(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
-    const nouvelleTache = { titre, description, dateEcheance };
+    const nouvelleTache = { titre, description, dateEcheance, terminee: false };
     setListe([...liste, nouvelleTache]);
     console.log(JSON.stringify(nouvelleTache));
     setTitre("");
     setDescription("");
     setDateEcheance("");
+  }
+
+  function basculerEtatTache(index: number) {
+    setListe((taches) =>
+      taches.map((tache, position) =>
+        position === index ? { ...tache, terminee: !tache.terminee } : tache
+      )
+    );
   }
 
   return (
@@ -57,8 +70,21 @@ function App() {
           <h2>Liste des tâches</h2>
           <ul>
             {liste.map((tache, index) => (
-              <li className="tache-item" key={index}>
-                <h3>{tache.titre}</h3>
+              <li
+                className={`tache-item ${tache.terminee ? "tache-terminee" : ""}`}
+                key={index}
+              >
+                <div className="tache-en-tete">
+                  <h3>{tache.titre}</h3>
+                  <label className="statut-tache">
+                    <input
+                      type="checkbox"
+                      checked={tache.terminee}
+                      onChange={() => basculerEtatTache(index)}
+                    />
+                    <span>{tache.terminee ? "Réalisée" : "À faire"}</span>
+                  </label>
+                </div>
                 <p>Description : {tache.description}</p>
                 <p className="date">Date d'échéance : {tache.dateEcheance}</p>
               </li>

@@ -147,6 +147,13 @@ ul {
   box-shadow: 0 4px 16px #6366f144;
 }
 
+.tache-en-tete {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .tache-item h3 {
   margin: 0 0 0.3rem 0;
   font-size: 1.2rem;
@@ -160,6 +167,32 @@ ul {
 .tache-item .date {
   color: #818cf8;
   font-size: 0.95rem;
+}
+
+.statut-tache {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: #d4d4d8;
+  cursor: pointer;
+  user-select: none;
+}
+
+.statut-tache input[type="checkbox"] {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: #6366f1;
+  cursor: pointer;
+}
+
+.tache-terminee {
+  opacity: 0.7;
+}
+
+.tache-terminee h3,
+.tache-terminee p {
+  text-decoration: line-through;
 }
 
 @media (max-width: 700px) {
