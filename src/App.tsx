@@ -1,13 +1,12 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { MouseEvent } from "react";
 import "./App.css";
-
-type Tache = {
-  id: string;
-  titre: string;
-  description: string;
-  dateEcheance: string;
-  terminee: boolean;
-};
+import { FormulaireTache } from "./components/FormulaireTache";
+import { ResumeTaches } from "./components/ResumeTaches";
+import { FiltresTaches } from "./components/FiltresTaches";
+import { ListeTaches } from "./components/ListeTaches";
+import { ModalConfirmation } from "./components/ModalConfirmation";
+import type { FiltreTache, Tache } from "./types/tache";
 
 function App() {
   const [titre, setTitre] = useState("");
@@ -50,9 +49,7 @@ function App() {
   );
   const [animeCompteurAFaire, setAnimeCompteurAFaire] = useState(false);
   const [animeCompteurTerminees, setAnimeCompteurTerminees] = useState(false);
-  const [filtreActif, setFiltreActif] = useState<"toutes" | "aFaire" | "terminees">(
-    "toutes"
-  );
+  const [filtreActif, setFiltreActif] = useState<FiltreTache>("toutes");
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -61,7 +58,7 @@ function App() {
     window.localStorage.setItem("taches", JSON.stringify(liste));
   }, [liste]);
 
-  function addTache(event: React.MouseEvent<HTMLButtonElement>) {
+  function addTache(event: MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
     const nouvelleTache: Tache = {
       id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
@@ -99,9 +96,7 @@ function App() {
       return;
     }
     const id = tacheASupprimer.id;
-    setEnSuppression((ids) =>
-      ids.includes(id) ? ids : [...ids, id]
-    );
+    setEnSuppression((ids) => (ids.includes(id) ? ids : [...ids, id]));
     setTacheASupprimer(null);
   }
 
@@ -198,10 +193,7 @@ function App() {
 
   useEffect(() => {
     setAnimeCompteurTerminees(true);
-    const timer = window.setTimeout(
-      () => setAnimeCompteurTerminees(false),
-      600
-    );
+    const timer = window.setTimeout(() => setAnimeCompteurTerminees(false), 600);
     return () => window.clearTimeout(timer);
   }, [nombreTerminees]);
 
@@ -209,242 +201,61 @@ function App() {
     <div>
       <h1>Bonjour 👋</h1>
       <h2>Voici un formulaire de to-do list</h2>
-      <div className="resume-taches">
-        <div className="carte-resume carte-animable">
-          <span className="resume-titre">À faire</span>
-          <span
-            className={`resume-valeur ${
-              animeCompteurAFaire ? "compteur-anime" : ""
-            }`}
-          >
-            {nombreAFaire}
-          </span>
-        </div>
-        <div className="carte-resume carte-animable">
-          <span className="resume-titre">Terminées</span>
-          <span
-            className={`resume-valeur ${
-              animeCompteurTerminees ? "compteur-anime" : ""
-            }`}
-          >
-            {nombreTerminees}
-          </span>
-        </div>
-      </div>
+      <ResumeTaches
+        nombreAFaire={nombreAFaire}
+        nombreTerminees={nombreTerminees}
+        animeCompteurAFaire={animeCompteurAFaire}
+        animeCompteurTerminees={animeCompteurTerminees}
+      />
       <div className="main-layout">
-        <div className="form-col bloc-animable">
-          <form action="#">
-            <p>Titre de la tache</p>
-            <input
-              type="text"
-              placeholder="Titre"
-              value={titre}
-              onChange={(e) => setTitre(e.target.value)}
-              required
-            />
-            <p>Description de la tache</p>
-            <input
-              type="text"
-              placeholder="Description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-            <p>Date d'échéance</p>
-            <input
-              type="date"
-              value={dateEcheance}
-              onChange={(e) => setDateEcheance(e.target.value)}
-            />
-            {titre && (
-              <button onClick={addTache}>Ajouter</button>
-            )}
-          </form>
-        </div>
+        <FormulaireTache
+          titre={titre}
+          description={description}
+          dateEcheance={dateEcheance}
+          onTitreChange={setTitre}
+          onDescriptionChange={setDescription}
+          onDateEcheanceChange={setDateEcheance}
+          onAjouter={addTache}
+        />
         <div className="taches-list bloc-animable">
           <h2>Liste des tâches</h2>
-          <div className="filtres-taches" role="group" aria-label="Filtres des tâches">
-            <button
-              type="button"
-              className={`filtre-bouton ${filtreActif === "toutes" ? "actif" : ""}`}
-              onClick={() => setFiltreActif("toutes")}
-              aria-pressed={filtreActif === "toutes"}
-            >
-              Toutes
-            </button>
-            <button
-              type="button"
-              className={`filtre-bouton ${filtreActif === "aFaire" ? "actif" : ""}`}
-              onClick={() => setFiltreActif("aFaire")}
-              aria-pressed={filtreActif === "aFaire"}
-            >
-              À faire
-            </button>
-            <button
-              type="button"
-              className={`filtre-bouton ${filtreActif === "terminees" ? "actif" : ""}`}
-              onClick={() => setFiltreActif("terminees")}
-              aria-pressed={filtreActif === "terminees"}
-            >
-              Terminées
-            </button>
-          </div>
+          <FiltresTaches
+            filtreActif={filtreActif}
+            onFiltreChange={setFiltreActif}
+          />
           {listeFiltree.length === 0 ? (
             <p className="liste-vide">{messageAucunResultat}</p>
           ) : (
-            <ul>
-              {listeFiltree.map((tache) => (
-              <li
-                className={`tache-item ${
-                  tache.terminee ? "tache-terminee" : ""
-                } ${
-                  enSuppression.includes(tache.id) ? "tache-suppression" : ""
-                } ${derniereTacheAjoutee === tache.id ? "tache-ajout" : ""}`}
-                key={tache.id}
-                onAnimationEnd={(event) =>
-                  gererFinSuppression(tache.id, event.animationName)
-                }
-              >
-                {idEnEdition === tache.id ? (
-                  <div className="edition-tache">
-                    <div className="edition-entete">
-                      <label className="statut-tache statut-edition">
-                        <input
-                          type="checkbox"
-                          checked={tache.terminee}
-                          onChange={() => basculerEtatTache(tache.id)}
-                        />
-                        <span>{tache.terminee ? "Réalisée" : "À faire"}</span>
-                      </label>
-                    </div>
-                    <div className="edition-champs">
-                      <label>
-                        <span>Titre</span>
-                        <input
-                          type="text"
-                          value={titreEdition}
-                          onChange={(event) => setTitreEdition(event.target.value)}
-                          required
-                        />
-                      </label>
-                      <label>
-                        <span>Description</span>
-                        <input
-                          type="text"
-                          value={descriptionEdition}
-                          onChange={(event) =>
-                            setDescriptionEdition(event.target.value)
-                          }
-                        />
-                      </label>
-                      <label>
-                        <span>Date d'échéance</span>
-                        <input
-                          type="date"
-                          value={dateEcheanceEdition}
-                          onChange={(event) =>
-                            setDateEcheanceEdition(event.target.value)
-                          }
-                        />
-                      </label>
-                    </div>
-                    <div className="edition-actions">
-                      <button
-                        type="button"
-                        onClick={() => enregistrerEdition(tache.id)}
-                        disabled={!titreEdition.trim()}
-                      >
-                        Enregistrer
-                      </button>
-                      <button
-                        type="button"
-                        className="bouton-secondaire"
-                        onClick={annulerEdition}
-                      >
-                        Annuler
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="tache-en-tete">
-                      <h3>{tache.titre}</h3>
-                      <div className="actions-tache">
-                        <label className="statut-tache">
-                          <input
-                            type="checkbox"
-                            checked={tache.terminee}
-                            onChange={() => basculerEtatTache(tache.id)}
-                          />
-                          <span>{tache.terminee ? "Réalisée" : "À faire"}</span>
-                        </label>
-                        <button
-                          type="button"
-                          className="bouton-edition"
-                          onClick={() => demarrerEdition(tache)}
-                          aria-label={`Modifier la tâche ${tache.titre}`}
-                        >
-                          Modifier
-                        </button>
-                        <button
-                          type="button"
-                          className="bouton-suppression"
-                          onClick={() => supprimerTache(tache.id)}
-                          aria-label={`Supprimer la tâche ${tache.titre}`}
-                        >
-                          Supprimer
-                        </button>
-                      </div>
-                    </div>
-                    <p>Description : {tache.description || "Aucune description"}</p>
-                    <p className="date">
-                      Date d'échéance : {tache.dateEcheance || "Non définie"}
-                    </p>
-                  </>
-                )}
-              </li>
-              ))}
-            </ul>
+            <ListeTaches
+              taches={listeFiltree}
+              enSuppression={enSuppression}
+              derniereTacheAjoutee={derniereTacheAjoutee}
+              idEnEdition={idEnEdition}
+              titreEdition={titreEdition}
+              descriptionEdition={descriptionEdition}
+              dateEcheanceEdition={dateEcheanceEdition}
+              onTitreEditionChange={setTitreEdition}
+              onDescriptionEditionChange={setDescriptionEdition}
+              onDateEcheanceEditionChange={setDateEcheanceEdition}
+              onBasculerEtat={basculerEtatTache}
+              onDemarrerEdition={demarrerEdition}
+              onAnnulerEdition={annulerEdition}
+              onEnregistrerEdition={enregistrerEdition}
+              onSupprimerTache={supprimerTache}
+              onFinSuppression={gererFinSuppression}
+            />
           )}
         </div>
       </div>
-    {tacheASupprimer && (
-      <div
-        className="modal-overlay"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="confirmation-suppression-titre"
-        onClick={annulerSuppressionTache}
-      >
-        <div
-          className="modal-content"
-          onClick={(event) => event.stopPropagation()}
-        >
-          <h3 id="confirmation-suppression-titre">Confirmer la suppression</h3>
-          <p>
-            Voulez-vous vraiment supprimer la tache{" "}
-            <strong>{tacheASupprimer.titre || "sans titre"}</strong> ?
-          </p>
-          <div className="modal-actions">
-            <button
-              type="button"
-              className="bouton-suppression"
-              onClick={confirmerSuppressionTache}
-            >
-              Supprimer
-            </button>
-            <button
-              type="button"
-              className="bouton-secondaire"
-              onClick={annulerSuppressionTache}
-            >
-              Annuler
-            </button>
-          </div>
-        </div>
-      </div>
-    )}
+      {tacheASupprimer && (
+        <ModalConfirmation
+          tache={tacheASupprimer}
+          onConfirmer={confirmerSuppressionTache}
+          onAnnuler={annulerSuppressionTache}
+        />
+      )}
     </div>
-
   );
 }
+
 export default App;
