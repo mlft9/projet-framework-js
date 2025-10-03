@@ -41,6 +41,22 @@ export function ListeTaches({
   tachesEnRetard,
   tachesEcheanceProche,
 }: ListeTachesProps) {
+  const formaterDate = (valeur: string): string => {
+    if (!valeur) {
+      return "";
+    }
+
+    const [annee, mois, jour] = valeur.split("-");
+    if (!annee || !mois || !jour) {
+      return valeur;
+    }
+
+    const jourFormate = jour.padStart(2, "0");
+    const moisFormate = mois.padStart(2, "0");
+
+    return `${jourFormate}/${moisFormate}/${annee}`;
+  };
+
   return (
     <ul>
       {taches.map((tache) => {
@@ -177,7 +193,10 @@ export function ListeTaches({
                 </div>
                 <p>Description : {tache.description || "Aucune description"}</p>
                 <p className="date">
-                  Date d'échéance : {tache.dateEcheance || "Non définie"}
+                  Date d'échéance :
+                  {tache.dateEcheance
+                    ? ` ${formaterDate(tache.dateEcheance)}`
+                    : " Non définie"}
                 </p>
               </>
             )}
