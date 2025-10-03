@@ -6,6 +6,7 @@ import { ResumeTaches } from "./components/ResumeTaches";
 import { FiltresTaches } from "./components/FiltresTaches";
 import { ListeTaches } from "./components/ListeTaches";
 import { ModalConfirmation } from "./components/ModalConfirmation";
+import { RechercheTaches } from "./components/RechercheTaches";
 import type { FiltreTache, Tache } from "./types/tache";
 
 function App() {
@@ -50,6 +51,7 @@ function App() {
   const [animeCompteurAFaire, setAnimeCompteurAFaire] = useState(false);
   const [animeCompteurTerminees, setAnimeCompteurTerminees] = useState(false);
   const [filtreActif, setFiltreActif] = useState<FiltreTache>("toutes");
+  const [termeRecherche, setTermeRecherche] = useState("");
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -154,17 +156,37 @@ function App() {
   const nombreAFaire = liste.length - nombreTerminees;
 
   const listeFiltree = useMemo(() => {
-    switch (filtreActif) {
-      case "aFaire":
-        return liste.filter((tache) => !tache.terminee);
-      case "terminees":
-        return liste.filter((tache) => tache.terminee);
-      default:
-        return liste;
+    const listeSelonFiltre = (() => {
+      switch (filtreActif) {
+        case "aFaire":
+          return liste.filter((tache) => !tache.terminee);
+        case "terminees":
+          return liste.filter((tache) => tache.terminee);
+        default:
+          return liste;
+      }
+    })();
+
+    const rechercheNormalisee = termeRecherche.trim().toLowerCase();
+    if (!rechercheNormalisee) {
+      return listeSelonFiltre;
     }
-  }, [liste, filtreActif]);
+
+    return listeSelonFiltre.filter((tache) => {
+      const titre = tache.titre.toLowerCase();
+      const description = tache.description.toLowerCase();
+      return (
+        titre.includes(rechercheNormalisee) ||
+        description.includes(rechercheNormalisee)
+      );
+    });
+  }, [liste, filtreActif, termeRecherche]);
 
   const messageAucunResultat = useMemo(() => {
+    if (termeRecherche.trim()) {
+      return "Aucune tâche ne correspond à votre recherche.";
+    }
+
     switch (filtreActif) {
       case "aFaire":
         return "Aucune tâche à faire pour le moment.";
@@ -173,7 +195,7 @@ function App() {
       default:
         return "Aucune tâche n'a encore été ajoutée.";
     }
-  }, [filtreActif]);
+  }, [filtreActif, termeRecherche]);
 
   useEffect(() => {
     if (!derniereTacheAjoutee) {
@@ -219,10 +241,16 @@ function App() {
         />
         <div className="taches-list bloc-animable">
           <h2>Liste des tâches</h2>
-          <FiltresTaches
-            filtreActif={filtreActif}
-            onFiltreChange={setFiltreActif}
-          />
+          <div className="zone-controles-taches">
+            <RechercheTaches
+              valeur={termeRecherche}
+              onRechercheChange={setTermeRecherche}
+            />
+            <FiltresTaches
+              filtreActif={filtreActif}
+              onFiltreChange={setFiltreActif}
+            />
+          </div>
           {listeFiltree.length === 0 ? (
             <p className="liste-vide">{messageAucunResultat}</p>
           ) : (
