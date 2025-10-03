@@ -4,9 +4,17 @@ type StatsPageProps = {
   total: number;
   terminees: number;
   aFaire: number;
+  enRetard: number;
+  echeanceProche: number;
 };
 
-export function StatsPage({ total, terminees, aFaire }: StatsPageProps): ReactElement {
+export function StatsPage({
+  total,
+  terminees,
+  aFaire,
+  enRetard,
+  echeanceProche,
+}: StatsPageProps): ReactElement {
   const pourcentageCompletion =
     total === 0 ? 0 : Number(((terminees / total) * 100).toFixed(1));
   const pourcentageAffiche = pourcentageCompletion.toLocaleString("fr-FR", {
@@ -37,6 +45,16 @@ export function StatsPage({ total, terminees, aFaire }: StatsPageProps): ReactEl
     }
     return `Encore ${aFaire} tâche${aFaire > 1 ? "s" : ""} à finaliser.`;
   })();
+
+  const messageRetard =
+    enRetard === 0
+      ? "Aucune tâche en retard. Gardez cette avance !"
+      : `${enRetard} tâche${enRetard > 1 ? "s" : ""} nécessite une action immédiate.`;
+
+  const messageEcheanceProche =
+    echeanceProche === 0
+      ? "Pas d'échéance imminente pour le moment."
+      : `${echeanceProche} tâche${echeanceProche > 1 ? "s" : ""} arrivent à échéance dans les 3 prochains jours.`;
 
   const repartitionTaches = [
     {
@@ -80,6 +98,60 @@ export function StatsPage({ total, terminees, aFaire }: StatsPageProps): ReactEl
           <span className="resume-valeur">{pourcentageAffiche} %</span>
         </div>
       </div>
+
+      <section className="stats-indicateurs">
+        <h2>Surveillance des échéances</h2>
+        <p className="stats-texte-intro">
+          Ces indicateurs suivent uniquement les tâches actives (non cochées) afin
+          de vous aider à prioriser ce qui doit être traité en premier.
+        </p>
+        <div className="stats-alertes">
+          <article
+            className={`carte-indicateur carte-retard ${
+              enRetard > 0 ? "carte-indicateur-active" : ""
+            }`}
+          >
+            <h3>Tâches en retard</h3>
+            <p className="carte-indicateur-valeur">{enRetard}</p>
+            <p className="carte-indicateur-message">{messageRetard}</p>
+          </article>
+          <article
+            className={`carte-indicateur carte-echeance-proche ${
+              echeanceProche > 0 ? "carte-indicateur-active" : ""
+            }`}
+          >
+            <h3>Échéance proche (&lt; 3 jours)</h3>
+            <p className="carte-indicateur-valeur">{echeanceProche}</p>
+            <p className="carte-indicateur-message">{messageEcheanceProche}</p>
+          </article>
+        </div>
+        <div className="stats-legende-couleurs">
+          <h3>Repères visuels partagés</h3>
+          <p>
+            Les couleurs ci-dessous sont reprises dans la liste principale pour
+            mettre en évidence les tâches concernées :
+          </p>
+          <ul>
+            <li>
+              <span className="legende-couleur badge-retard" aria-hidden="true" />
+              <div>
+                <strong>En retard</strong>
+                <p>Fond rouge et badge associé dans la liste des tâches.</p>
+              </div>
+            </li>
+            <li>
+              <span
+                className="legende-couleur badge-echeance-proche"
+                aria-hidden="true"
+              />
+              <div>
+                <strong>Échéance proche</strong>
+                <p>Accent doré signalant une échéance dans moins de 3 jours.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
 
       <section className="stats-visualisations">
         <article className="graphique-carte">
