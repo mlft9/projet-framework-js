@@ -40,6 +40,10 @@ function App() {
     }
   });
   const [enSuppression, setEnSuppression] = useState<Array<string>>([]);
+  const [idEnEdition, setIdEnEdition] = useState<string | null>(null);
+  const [titreEdition, setTitreEdition] = useState("");
+  const [descriptionEdition, setDescriptionEdition] = useState("");
+  const [dateEcheanceEdition, setDateEcheanceEdition] = useState("");
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -52,8 +56,8 @@ function App() {
     event.preventDefault();
     const nouvelleTache: Tache = {
       id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-      titre,
-      description,
+      titre: titre.trim(),
+      description: description.trim(),
       dateEcheance,
       terminee: false,
     };
@@ -64,10 +68,10 @@ function App() {
     setDateEcheance("");
   }
 
-  function basculerEtatTache(index: number) {
+  function basculerEtatTache(id: string) {
     setListe((taches) =>
-      taches.map((tache, position) =>
-        position === index ? { ...tache, terminee: !tache.terminee } : tache
+      taches.map((tache) =>
+        tache.id === id ? { ...tache, terminee: !tache.terminee } : tache
       )
     );
   }
@@ -88,10 +92,56 @@ function App() {
     });
   }
 
+  function demarrerEdition(tache: Tache) {
+    setIdEnEdition(tache.id);
+    setTitreEdition(tache.titre);
+    setDescriptionEdition(tache.description);
+    setDateEcheanceEdition(tache.dateEcheance);
+  }
+
+  function annulerEdition() {
+    setIdEnEdition(null);
+    setTitreEdition("");
+    setDescriptionEdition("");
+    setDateEcheanceEdition("");
+  }
+
+  function enregistrerEdition(id: string) {
+    if (!titreEdition.trim()) {
+      return;
+    }
+    setListe((taches) =>
+      taches.map((tache) =>
+        tache.id === id
+          ? {
+              ...tache,
+              titre: titreEdition.trim(),
+              description: descriptionEdition.trim(),
+              dateEcheance: dateEcheanceEdition,
+            }
+          : tache
+      )
+    );
+    annulerEdition();
+  }
+
+  const nombreTerminees = liste.filter((tache) => tache.terminee).length;
+  const nombreAFaire = liste.length - nombreTerminees;
+
   return (
     <div>
       <h1>Bonjour 👋</h1>
       <h2>Voici un formulaire de to-do list</h2>
+      <div className="resume-taches">
+        <div className="carte-resume">
+          <span className="resume-titre">À faire</span>
+          <span className="resume-valeur">{nombreAFaire}</span>
+        </div>
+        <div className="carte-resume">
+          <span className="resume-titre">Terminées</span>
+          <span className="resume-valeur">{nombreTerminees}</span>
+        </div>
+      </div>
       <div className="main-layout">
         <div className="form-col">
           <form action="#">
@@ -124,7 +174,7 @@ function App() {
         <div className="taches-list">
           <h2>Liste des tâches</h2>
           <ul>
-            {liste.map((tache, index) => (
+            {liste.map((tache) => (
               <li
                 className={`tache-item ${
                   tache.terminee ? "tache-terminee" : ""
@@ -132,27 +182,103 @@ function App() {
                 key={tache.id}
                 onAnimationEnd={() => gererFinSuppression(tache.id)}
               >
-                <div className="tache-en-tete">
-                  <h3>{tache.titre}</h3>
-                  <label className="statut-tache">
-                    <input
-                      type="checkbox"
-                      checked={tache.terminee}
-                      onChange={() => basculerEtatTache(index)}
-                    />
-                    <span>{tache.terminee ? "Réalisée" : "À faire"}</span>
-                  </label>
-                  <button
-                    type="button"
-                    className="bouton-suppression"
-                    onClick={() => supprimerTache(tache.id)}
-                    aria-label={`Supprimer la tâche ${tache.titre}`}
-                  >
-                    Supprimer
-                  </button>
-                </div>
-                <p>Description : {tache.description}</p>
-                <p className="date">Date d'échéance : {tache.dateEcheance}</p>
+                {idEnEdition === tache.id ? (
+                  <div className="edition-tache">
+                    <div className="edition-entete">
+                      <label className="statut-tache statut-edition">
+                        <input
+                          type="checkbox"
+                          checked={tache.terminee}
+                          onChange={() => basculerEtatTache(tache.id)}
+                        />
+                        <span>{tache.terminee ? "Réalisée" : "À faire"}</span>
+                      </label>
+                    </div>
+                    <div className="edition-champs">
+                      <label>
+                        <span>Titre</span>
+                        <input
+                          type="text"
+                          value={titreEdition}
+                          onChange={(event) => setTitreEdition(event.target.value)}
+                          required
+                        />
+                      </label>
+                      <label>
+                        <span>Description</span>
+                        <input
+                          type="text"
+                          value={descriptionEdition}
+                          onChange={(event) =>
+                            setDescriptionEdition(event.target.value)
+                          }
+                        />
+                      </label>
+                      <label>
+                        <span>Date d'échéance</span>
+                        <input
+                          type="date"
+                          value={dateEcheanceEdition}
+                          onChange={(event) =>
+                            setDateEcheanceEdition(event.target.value)
+                          }
+                        />
+                      </label>
+                    </div>
+                    <div className="edition-actions">
+                      <button
+                        type="button"
+                        onClick={() => enregistrerEdition(tache.id)}
+                        disabled={!titreEdition.trim()}
+                      >
+                        Enregistrer
+                      </button>
+                      <button
+                        type="button"
+                        className="bouton-secondaire"
+                        onClick={annulerEdition}
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="tache-en-tete">
+                      <h3>{tache.titre}</h3>
+                      <div className="actions-tache">
+                        <label className="statut-tache">
+                          <input
+                            type="checkbox"
+                            checked={tache.terminee}
+                            onChange={() => basculerEtatTache(tache.id)}
+                          />
+                          <span>{tache.terminee ? "Réalisée" : "À faire"}</span>
+                        </label>
+                        <button
+                          type="button"
+                          className="bouton-edition"
+                          onClick={() => demarrerEdition(tache)}
+                          aria-label={`Modifier la tâche ${tache.titre}`}
+                        >
+                          Modifier
+                        </button>
+                        <button
+                          type="button"
+                          className="bouton-suppression"
+                          onClick={() => supprimerTache(tache.id)}
+                          aria-label={`Supprimer la tâche ${tache.titre}`}
+                        >
+                          Supprimer
+                        </button>
+                      </div>
+                    </div>
+                    <p>Description : {tache.description || "Aucune description"}</p>
+                    <p className="date">
+                      Date d'échéance : {tache.dateEcheance || "Non définie"}
+                    </p>
+                  </>
+                )}
               </li>
             ))}
           </ul>

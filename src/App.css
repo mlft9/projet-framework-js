@@ -75,6 +75,38 @@ h2 {
   margin-bottom: 1.5rem;
 }
 
+.resume-taches {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin: 1.5rem 0 0.5rem 0;
+}
+
+.carte-resume {
+  background: #1a1a20;
+  border-radius: 12px;
+  padding: 0.9rem 1.4rem;
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  box-shadow: inset 0 1px 0 #ffffff08, 0 8px 20px #00000033;
+}
+
+.resume-titre {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #a1a1aa;
+}
+
+.resume-valeur {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #c7d2fe;
+}
+
 form {
   display: flex;
   flex-direction: column;
@@ -155,6 +187,12 @@ ul {
   flex-wrap: wrap;
 }
 
+.actions-tache {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .tache-item h3 {
   margin: 0 0 0.3rem 0;
   font-size: 1.2rem;
@@ -196,12 +234,93 @@ ul {
   border-radius: 6px;
   box-shadow: none;
   transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  margin-top: 0;
 }
 
 .bouton-suppression:hover {
   background: #ef4444;
   color: #fff;
   transform: translateY(-1px);
+}
+
+.bouton-edition {
+  background: transparent;
+  border: 1px solid #6366f1;
+  color: #c7d2fe;
+  padding: 0.4em 0.8em;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  box-shadow: none;
+  margin-top: 0;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.bouton-edition:hover {
+  background: #4f46e5;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.bouton-secondaire {
+  background: transparent;
+  border: 1px solid #71717a;
+  color: #e4e4e7;
+  padding: 0.55em 1em;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  margin-top: 0;
+  box-shadow: none;
+  transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.bouton-secondaire:hover {
+  border-color: #a1a1aa;
+  color: #fafafa;
+  transform: translateY(-1px);
+}
+
+.bouton-secondaire:disabled,
+.bouton-edition:disabled,
+.bouton-suppression:disabled,
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.edition-tache {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.edition-entete {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.statut-edition {
+  justify-content: flex-end;
+}
+
+.edition-champs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.edition-champs label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.95rem;
+  color: #d4d4d8;
+}
+
+.edition-actions {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
 }
 
 .tache-terminee {
