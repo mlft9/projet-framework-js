@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 
 type Tache = {
+  id: string;
   titre: string;
   description: string;
   dateEcheance: string;
@@ -13,12 +14,50 @@ function App() {
   const [description, setDescription] = useState("");
   const [dateEcheance, setDateEcheance] = useState("");
 
-  const [liste, setListe] = useState<Array<Tache>>([]);
+  const [liste, setListe] = useState<Array<Tache>>(() => {
+    if (typeof window === "undefined") {
+      return [];
+    }
+
+    const donnees = window.localStorage.getItem("taches");
+    if (!donnees) {
+      return [];
+    }
+
+    try {
+      const tachesStockees: Tache[] = JSON.parse(donnees);
+      if (!Array.isArray(tachesStockees)) {
+        return [];
+      }
+      return tachesStockees.map((tache) => ({
+        ...tache,
+        id: tache.id ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        terminee: Boolean(tache.terminee),
+      }));
+    } catch (error) {
+      console.error("Impossible de lire les tâches en mémoire :", error);
+      return [];
+    }
+  });
+  const [enSuppression, setEnSuppression] = useState<Array<string>>([]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    window.localStorage.setItem("taches", JSON.stringify(liste));
+  }, [liste]);
 
   function addTache(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
-    const nouvelleTache = { titre, description, dateEcheance, terminee: false };
-    setListe([...liste, nouvelleTache]);
+    const nouvelleTache: Tache = {
+      id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      titre,
+      description,
+      dateEcheance,
+      terminee: false,
+    };
+    setListe((taches) => [...taches, nouvelleTache]);
     console.log(JSON.stringify(nouvelleTache));
     setTitre("");
     setDescription("");
@@ -31,6 +70,22 @@ function App() {
         position === index ? { ...tache, terminee: !tache.terminee } : tache
       )
     );
+  }
+
+  function supprimerTache(id: string) {
+    setEnSuppression((ids) =>
+      ids.includes(id) ? ids : [...ids, id]
+    );
+  }
+
+  function gererFinSuppression(id: string) {
+    setEnSuppression((ids) => {
+      if (!ids.includes(id)) {
+        return ids;
+      }
+      setListe((taches) => taches.filter((tache) => tache.id !== id));
+      return ids.filter((valeur) => valeur !== id);
+    });
   }
 
   return (
@@ -71,8 +126,11 @@ function App() {
           <ul>
             {liste.map((tache, index) => (
               <li
-                className={`tache-item ${tache.terminee ? "tache-terminee" : ""}`}
-                key={index}
+                className={`tache-item ${
+                  tache.terminee ? "tache-terminee" : ""
+                } ${enSuppression.includes(tache.id) ? "tache-suppression" : ""}`}
+                key={tache.id}
+                onAnimationEnd={() => gererFinSuppression(tache.id)}
               >
                 <div className="tache-en-tete">
                   <h3>{tache.titre}</h3>
@@ -84,6 +142,14 @@ function App() {
                     />
                     <span>{tache.terminee ? "Réalisée" : "À faire"}</span>
                   </label>
+                  <button
+                    type="button"
+                    className="bouton-suppression"
+                    onClick={() => supprimerTache(tache.id)}
+                    aria-label={`Supprimer la tâche ${tache.titre}`}
+                  >
+                    Supprimer
+                  </button>
                 </div>
                 <p>Description : {tache.description}</p>
                 <p className="date">Date d'échéance : {tache.dateEcheance}</p>
